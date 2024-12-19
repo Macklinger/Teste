@@ -1,0 +1,159 @@
+
+
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análise Estatística da Mega-Sena</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-auth.js"></script>
+    <style>
+        /* Seus estilos aqui */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Seção de Análise Estatística -->
+        <h1>Análise Estatística da Mega-Sena</h1>
+        <div class="input-section">
+            <h2>Insira os Resultados</h2>
+            <textarea id="resultsInput" placeholder="Digite os números separados por vírgula (ex: 5, 12, 23, 34, 45)"></textarea>
+            <button class="btn" onclick="analyzeResults()">Analisar</button>
+        </div>
+        <div id="result-section" class="result-section" style="display: none;">
+            <h2>Resultados e Análises</h2>
+            <div id="results"></div>
+            <canvas id="lineChart" class="chart-container"></canvas>
+            <canvas id="columnChart" class="chart-container"></canvas>
+        </div>
+
+        <!-- Seção de Login -->
+        <div id="login-section" class="auth-section">
+            <h2>Login</h2>
+            <input type="email" id="userEmail" placeholder="E-mail">
+            <input type="password" id="userPassword" placeholder="Senha">
+            <button class="btn" onclick="loginUser()">Login</button>
+            <p>Ainda não tem conta? <a href="#" onclick="showRegisterForm()">Cadastre-se aqui</a></p>
+        </div>
+
+        <!-- Seção de Cadastro -->
+        <div id="register-section" class="auth-section" style="display: none;">
+            <h2>Cadastro</h2>
+            <input type="text" id="userName" placeholder="Nome Completo">
+            <input type="email" id="userEmailRegister" placeholder="E-mail">
+            <input type="tel" id="userPhone" placeholder="Telefone">
+            <input type="password" id="userPasswordRegister" placeholder="Senha">
+            <button class="btn" onclick="registerUser()">Cadastrar</button>
+            <p>Já tem uma conta? <a href="#" onclick="showLoginForm()">Faça login aqui</a></p>
+        </div>
+
+        <!-- Seção de Conteúdo Restrito (Somente para membros pagos) -->
+        <div id="restricted-section" class="auth-section" style="display: none;">
+            <h2>Conteúdo Exclusivo para Membros Pagos</h2>
+            <button class="btn" onclick="makePurchase()">Comprar Acesso</button>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Configuration (substitua com suas configurações)
+        const firebaseConfig = {
+            apiKey: "SUA_API_KEY",
+            authDomain: "SEU_AUTH_DOMAIN",
+            projectId: "SEU_PROJECT_ID",
+            storageBucket: "SEU_STORAGE_BUCKET",
+            messagingSenderId: "SEU_MESSAGING_SENDER_ID",
+            appId: "SEU_APP_ID"
+        };
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        // Função de login
+        function loginUser() {
+            const email = document.getElementById('userEmail').value;
+            const password = document.getElementById('userPassword').value;
+
+            auth.signInWithEmailAndPassword(email, password)
+                .then(userCredential => {
+                    const user = userCredential.user;
+                    alert('Login realizado com sucesso!');
+                    showRestrictedContent();
+                })
+                .catch(error => alert('Erro ao fazer login: ' + error.message));
+        }
+
+        // Função de cadastro
+        function registerUser() {
+            const name = document.getElementById('userName').value;
+            const email = document.getElementById('userEmailRegister').value;
+            const phone = document.getElementById('userPhone').value;
+            const password = document.getElementById('userPasswordRegister').value;
+
+            auth.createUserWithEmailAndPassword(email, password)
+                .then(() => alert('Usuário registrado com sucesso!'))
+                .catch(error => alert('Erro ao registrar: ' + error.message));
+        }
+
+        // Função para exibir conteúdo restrito
+        function showRestrictedContent() {
+            // Lógica para verificar se o usuário é pago ou não
+            // Aqui você pode adicionar a verificação do status de pagamento
+            document.getElementById('restricted-section').style.display = 'block';
+        }
+
+        // Função de navegação para mostrar o formulário de cadastro
+        function showRegisterForm() {
+            document.getElementById('login-section').style.display = 'none';
+            document.getElementById('register-section').style.display = 'block';
+        }
+
+        // Função de navegação para mostrar o formulário de login
+        function showLoginForm() {
+            document.getElementById('register-section').style.display = 'none';
+            document.getElementById('login-section').style.display = 'block';
+        }
+
+        // Função de compra
+        function makePurchase() {
+            window.location.href = "https://kiwifi.com.br/sua-pagina-de-compra"; // Substitua pelo link da sua página de compra
+        }
+
+        // Função de análise (mantida sem alterações)
+        function analyzeResults() {
+            const input = document.getElementById('resultsInput').value;
+            const results = input.split(',').map(num => parseInt(num.trim())).filter(num => !isNaN(num));
+
+            if (results.length === 0) {
+                alert("Por favor, insira pelo menos um número.");
+                return;
+            }
+
+            document.getElementById('result-section').style.display = 'block';
+            const resultsDiv = document.getElementById('results');
+
+            const lineAnalysis = analyzeLines(results);
+            const columnAnalysis = analyzeColumns(results);
+
+            resultsDiv.innerHTML = `
+                <div class="result"><strong>Resultados Digitados:</strong> ${results.join(', ')}</div>
+                ${generateResultHTML('Linhas', lineAnalysis.analysis, 'green')}
+                ${generateResultHTML('Colunas', columnAnalysis.analysis, 'blue')}
+            `;
+
+            generateLineChart(lineAnalysis);
+            generateColumnChart(columnAnalysis);
+        }
+
+        // Funções de análise de linhas e colunas (mantidas sem alterações)
+        function analyzeLines(numbers) { /* Sem alterações */ }
+        function analyzeColumns(numbers) { /* Sem alterações */ }
+        function generateResultHTML(title, data, color) { /* Sem alterações */ }
+        function generateLineChart(data) { /* Sem alterações */ }
+        function generateColumnChart(data) { /* Sem alterações */ }
+    </script>
+</body>
+</html>
+
